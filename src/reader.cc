@@ -18,7 +18,7 @@ static void *tryParentize(const redisReadTask *task, const Local<Value> &v) {
         Local<Value> lvalue = Nan::New(r->handle[pidx]);
         assert(lvalue->IsArray());
         Local<Array> larray = lvalue.As<Array>();
-        larray->Set(task->idx,v);
+        larray->Set(v8::Isolate::GetCurrent()->GetCurrentContext(), task->idx,v);
 
         /* Store the handle when this is an inner array. Otherwise, hiredis
          * doesn't care about the return value as long as the value is set in
@@ -52,7 +52,7 @@ static void *createString(const redisReadTask *task, char *str, size_t len) {
     Local<Value> v(r->createString(str,len));
 
     if (task->type == REDIS_REPLY_ERROR)
-        v = Exception::Error(v->ToString());
+        v = Exception::Error(v->ToString(v8::Isolate::GetCurrent()->GetCurrentContext()).ToLocalChecked());
     return tryParentize(task,v);
 }
 
