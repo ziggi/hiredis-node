@@ -4,13 +4,13 @@ var assert = require("assert"),
 
 test("CreateReader", function() {
     var reader = new hiredis.Reader();
-    assert.notEqual(reader, null);
+    assert.notStrictEqual(reader, null);
 });
 
 test("StatusReply", function() {
     var reader = new hiredis.Reader();
     reader.feed("+OK\r\n");
-    assert.equal("OK", reader.get());
+    assert.strictEqual("OK", reader.get());
 });
 
 test("StatusReplyAsBuffer", function() {
@@ -18,13 +18,13 @@ test("StatusReplyAsBuffer", function() {
     reader.feed("+OK\r\n");
     var reply = reader.get();
     assert.ok(Buffer.isBuffer(reply));
-    assert.equal("OK", reply.toString());
+    assert.strictEqual("OK", reply.toString());
 });
 
 test("IntegerReply", function() {
     var reader = new hiredis.Reader();
     reader.feed(":1\r\n");
-    assert.equal(1, reader.get());
+    assert.strictEqual(1, reader.get());
 });
 
 test("LargeIntegerReply", function() {
@@ -32,41 +32,41 @@ test("LargeIntegerReply", function() {
     reader.feed(":9223372036854775807\r\n");
     // We test for a different value here, as JavaScript has no 64-bit integers,
     // only IEEE double precision floating point numbers
-    assert.equal("9223372036854776000", String(reader.get()));
+    assert.strictEqual("9223372036854776000", String(reader.get()));
 });
 
 test("ErrorReply", function() {
     var reader = new hiredis.Reader();
     reader.feed("-ERR foo\r\n");
     var reply = reader.get();
-    assert.equal(Error, reply.constructor);
-    assert.equal("ERR foo", reply.message);
+    assert.strictEqual(Error, reply.constructor);
+    assert.strictEqual("ERR foo", reply.message);
 });
 
 test("ErrorReplyWithReturnBuffers", function() {
     var reader = new hiredis.Reader({ return_buffers: true });
     reader.feed("-ERR foo\r\n");
     var reply = reader.get();
-    assert.equal(Error, reply.constructor);
-    assert.equal("ERR foo", reply.message);
+    assert.strictEqual(Error, reply.constructor);
+    assert.strictEqual("ERR foo", reply.message);
 });
 
 test("NullBulkReply", function() {
     var reader = new hiredis.Reader();
     reader.feed("$-1\r\n");
-    assert.equal(null, reader.get());
+    assert.strictEqual(null, reader.get());
 });
 
 test("EmptyBulkReply", function() {
     var reader = new hiredis.Reader();
     reader.feed("$0\r\n\r\n");
-    assert.equal("", reader.get());
+    assert.strictEqual("", reader.get());
 });
 
 test("BulkReply", function() {
     var reader = new hiredis.Reader();
     reader.feed("$3\r\nfoo\r\n");
-    assert.equal("foo", reader.get());
+    assert.strictEqual("foo", reader.get());
 });
 
 test("BulkReplyAsBuffer", function() {
@@ -74,37 +74,37 @@ test("BulkReplyAsBuffer", function() {
     reader.feed("$3\r\nfoo\r\n");
     var reply = reader.get();
     assert.ok(Buffer.isBuffer(reply));
-    assert.equal("foo", reply.toString());
+    assert.strictEqual("foo", reply.toString());
 });
 
 test("BulkReplyWithEncoding", function() {
     var reader = new hiredis.Reader();
     reader.feed("$" + Buffer.byteLength("☃") + "\r\n☃\r\n");
-    assert.equal("☃", reader.get());
+    assert.strictEqual("☃", reader.get());
 });
 
 test("NullMultiBulkReply", function() {
     var reader = new hiredis.Reader();
     reader.feed("*-1\r\n");
-    assert.equal(null, reader.get());
+    assert.strictEqual(null, reader.get());
 });
 
 test("EmptyMultiBulkReply", function() {
     var reader = new hiredis.Reader();
     reader.feed("*0\r\n");
-    assert.deepEqual([], reader.get());
+    assert.deepStrictEqual([], reader.get());
 });
 
 test("MultiBulkReply", function() {
     var reader = new hiredis.Reader();
     reader.feed("*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n");
-    assert.deepEqual(["foo", "bar"], reader.get());
+    assert.deepStrictEqual(["foo", "bar"], reader.get());
 });
 
 test("NestedMultiBulkReply", function() {
     var reader = new hiredis.Reader();
     reader.feed("*2\r\n*2\r\n$3\r\nfoo\r\n$3\r\nbar\r\n$3\r\nqux\r\n");
-    assert.deepEqual([["foo", "bar"], "qux"], reader.get());
+    assert.deepStrictEqual([["foo", "bar"], "qux"], reader.get());
 });
 
 test("DeeplyNestedMultiBulkReply", function() {
@@ -119,7 +119,7 @@ test("DeeplyNestedMultiBulkReply", function() {
 
     reader.feed(":1\r\n");
 
-    assert.deepEqual(reader.get(), expected);
+    assert.deepStrictEqual(reader.get(), expected);
 });
 
 test("TooDeeplyNestedMultiBulkReply", function() {
@@ -143,21 +143,21 @@ test("TooDeeplyNestedMultiBulkReply", function() {
 test("MultiBulkReplyWithNonStringValues", function() {
     var reader = new hiredis.Reader();
     reader.feed("*3\r\n:1\r\n+OK\r\n$-1\r\n");
-    assert.deepEqual([1, "OK", null], reader.get());
+    assert.deepStrictEqual([1, "OK", null], reader.get());
 });
 
 test("FeedWithBuffer", function() {
     var reader = new hiredis.Reader();
-    reader.feed(new Buffer("$3\r\nfoo\r\n"));
-    assert.deepEqual("foo", reader.get());
+    reader.feed(new Buffer.from("$3\r\nfoo\r\n"));
+    assert.deepStrictEqual("foo", reader.get());
 });
 
 test("UndefinedReplyOnIncompleteFeed", function() {
     var reader = new hiredis.Reader();
     reader.feed("$3\r\nfoo");
-    assert.deepEqual(undefined, reader.get());
+    assert.deepStrictEqual(undefined, reader.get());
     reader.feed("\r\n");
-    assert.deepEqual("foo", reader.get());
+    assert.deepStrictEqual("foo", reader.get());
 });
 
 test("Leaks", function() {

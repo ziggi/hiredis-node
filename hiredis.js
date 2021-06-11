@@ -1,24 +1,24 @@
 var net = require("net"),
     hiredis = require('bindings')('hiredis.node');
 
-var bufStar = new Buffer("*", "ascii");
-var bufDollar = new Buffer("$", "ascii");
-var bufCrlf = new Buffer("\r\n", "ascii");
+var bufStar = new Buffer.from("*", "ascii");
+var bufDollar = new Buffer.from("$", "ascii");
+var bufCrlf = new Buffer.from("\r\n", "ascii");
 
 exports.Reader = hiredis.Reader;
 
 exports.writeCommand = function() {
     var args = arguments,
-        bufLen = new Buffer(String(args.length), "ascii"),
+        bufLen = new Buffer.from(String(args.length), "ascii"),
         parts = [bufStar, bufLen, bufCrlf],
         size = 3 + bufLen.length;
 
     for (var i = 0; i < args.length; i++) {
         var arg = args[i];
         if (!Buffer.isBuffer(arg))
-            arg = new Buffer(String(arg));
+            arg = new Buffer.from(String(arg));
 
-        bufLen = new Buffer(String(arg.length), "ascii");
+        bufLen = new Buffer.from(String(arg.length), "ascii");
         parts = parts.concat([
             bufDollar, bufLen, bufCrlf,
             arg, bufCrlf
@@ -54,4 +54,3 @@ exports.createConnection = function(port, host) {
 
     return s;
 }
-
